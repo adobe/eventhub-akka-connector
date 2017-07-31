@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="com.microsoft.azure:azure-eventhubs:0.14.3" type="repository">
+    <properties maven-id="com.microsoft.azure:azure-eventhubs:0.14.3" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/microsoft/azure/azure-eventhubs/0.14.3/azure-eventhubs-0.14.3.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/qpid/proton-j/0.18.0/proton-j-0.18.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
