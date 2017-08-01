@@ -1,4 +1,5 @@
 import akka.Done;
+import akka.Done$;
 import akka.NotUsed;
 import akka.actor.*;
 import akka.japi.function.Procedure;
@@ -29,7 +30,7 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
         }
     }
 
-    public Outlet<Tuple2<PartitionContext, EventData>> out;
+    private Outlet<Tuple2<PartitionContext, EventData>> out;
 
 
     private class Logic extends GraphStageLogic implements IEventProcessor{
@@ -39,6 +40,9 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
         private Queue<EventData> pendingEvents;
         private PartitionContext currentContext;
         private int partitionCount;
+        private AsyncCallback<Done> openCallback;
+        private AsyncCallback<Done> closeCallback;
+        private AsyncCallback<Done> processCallback;
 
         OutHandler handler = new AbstractOutHandler() {
             @Override
@@ -58,10 +62,24 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
 
         @Override
         public void preStart(){
-            AsyncCallback<Done> callback = createAsyncCallback(new Procedure<Done>() {
+            openCallback = createAsyncCallback(new Procedure<Done>() {
+                @Override
+                public void apply(Done param) throws Exception{
+                    partitionCount++;
+                }
+            });
+            closeCallback = createAsyncCallback(new Procedure<Done>() {
                 @Override
                 public void apply(Done param) throws Exception {
-
+                    if(--partitionCount == 0){
+                        completeStage();
+                    }
+                }
+            });
+            processCallback = createAsyncCallback(new Procedure<Done>() {
+                @Override
+                public void apply(Done param) throws Exception {
+                    handler.onPull();
                 }
             });
         }
@@ -69,12 +87,17 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
 
         @Override
         public void onClose(PartitionContext partitionContext, CloseReason closeReason) throws Exception {
-            partitionContext.checkpoint();
+            CompletionStage<Done> completion = new CompletableFuture<>();
+            completion.thenAccept(closeCallback::invoke);
+
+
         }
 
         @Override
         public void onOpen(PartitionContext partitionContext) throws Exception {
-            pendingEvents =  new ArrayDeque<EventData>();
+            CompletionStage<Done> completion = new CompletableFuture<>();
+            completion.thenAccept(openCallback::invoke);
+            pendingEvents =  new ArrayDeque<>();
         }
 
         @Override
@@ -83,6 +106,8 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
             while(toIterate.hasNext()){
                 pendingEvents.offer(toIterate.next());
             }
+            CompletionStage<Done> completion = new CompletableFuture<>();
+            completion.thenAccept(processCallback::invoke);
         }
 
         @Override
@@ -96,7 +121,6 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
             source = this.source;
             out = Outlet.create("EventHubSource.out");
             setHandler(out, handler);
-
         }
 
 
