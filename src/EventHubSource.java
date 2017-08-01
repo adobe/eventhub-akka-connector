@@ -3,10 +3,7 @@ import akka.Done$;
 import akka.NotUsed;
 import akka.actor.*;
 import akka.japi.function.Procedure;
-import akka.stream.Attributes;
-import akka.stream.Graph;
-import akka.stream.Outlet;
-import akka.stream.SourceShape;
+import akka.stream.*;
 import akka.stream.stage.*;
 import com.microsoft.azure.eventhubs.EventData;
 import com.microsoft.azure.eventprocessorhost.CloseReason;
@@ -31,6 +28,7 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
     }
 
     private Outlet<Tuple2<PartitionContext, EventData>> out;
+    private SourceShape<Tuple2<PartitionContext, EventData>> shape;
 
 
     private class Logic extends GraphStageLogic implements IEventProcessor{
@@ -95,6 +93,7 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
 
         @Override
         public void onOpen(PartitionContext partitionContext) throws Exception {
+            System.out.println("SAMPLE: Partition " + partitionContext.getPartitionId() + " is opening");
             CompletionStage<Done> completion = new CompletableFuture<>();
             completion.thenAccept(openCallback::invoke);
             pendingEvents =  new ArrayDeque<>();
@@ -104,7 +103,8 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
         public void onEvents(PartitionContext partitionContext, Iterable<EventData> iterable) throws Exception {
             Iterator<EventData> toIterate = iterable.iterator();
             while(toIterate.hasNext()){
-                pendingEvents.offer(toIterate.next());
+                EventData data = toIterate.next();
+                pendingEvents.offer(data);
             }
             CompletionStage<Done> completion = new CompletableFuture<>();
             completion.thenAccept(processCallback::invoke);
@@ -119,21 +119,23 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
         public Logic(EventHubSource source) {
             super(source.shape());
             source = this.source;
-            out = Outlet.create("EventHubSource.out");
             setHandler(out, handler);
         }
 
 
     }
 
-    private final SourceShape<Tuple2<PartitionContext, EventData>> shape = SourceShape.of(out);
+
 
     @Override
     public SourceShape<Tuple2<PartitionContext, EventData>> shape(){
         return shape;
     }
 
-
+    public EventHubSource(){
+        out = Outlet.create("EventHubSource.out");
+        shape = SourceShape.of(out);
+    }
     @Override
     public Tuple2<GraphStageLogic, IEventProcessor> createLogicAndMaterializedValue(Attributes attributes){
         GraphStageLogic logic = new Logic(this);
