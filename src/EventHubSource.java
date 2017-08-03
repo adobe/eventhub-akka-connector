@@ -1,6 +1,9 @@
+/**
+ * Created by cantguaj on 6/21/17.
+ */
+
+
 import akka.Done;
-import akka.Done$;
-import akka.NotUsed;
 import akka.actor.*;
 import akka.japi.function.Procedure;
 import akka.stream.*;
@@ -10,22 +13,14 @@ import com.microsoft.azure.eventprocessorhost.CloseReason;
 import com.microsoft.azure.eventprocessorhost.IEventProcessor;
 import com.microsoft.azure.eventprocessorhost.PartitionContext;
 import scala.Tuple2;
-import scala.concurrent.Promise;
-
+import scala.concurrent.ExecutionContext;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<Tuple2<PartitionContext, EventData>>, IEventProcessor>  {
 
-    private class ProcessContext {
-        public ProcessContext(CompletionStage<Done> completion, PartitionContext context, Iterable<EventData> events){
-        }
-    }
 
     private Outlet<Tuple2<PartitionContext, EventData>> out;
     private SourceShape<Tuple2<PartitionContext, EventData>> shape;
@@ -38,10 +33,32 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
         private Queue<EventData> pendingEvents;
         private PartitionContext currentContext;
         private int partitionCount;
-        private AsyncCallback<Done> openCallback;
-        private AsyncCallback<Done> closeCallback;
-        private AsyncCallback<Done> processCallback;
 
+        private AsyncCallback<Done> openCallback = createAsyncCallback(new Procedure<Done>() {
+            @Override
+            public void apply(Done param) throws Exception{
+                partitionCount++;
+            }
+        });
+
+        private AsyncCallback<Done> closeCallback = createAsyncCallback(new Procedure<Done>() {
+            @Override
+            public void apply(Done param) throws Exception {
+                if(--partitionCount == 0){
+                    completeStage();
+                }
+            }
+        });
+
+        private AsyncCallback<Done>  processCallback = createAsyncCallback(new Procedure<Done>() {
+            @Override
+            public void apply(Done param) throws Exception {
+                handler.onPull();
+            }
+        });
+
+        private ExecutionContext ec;
+        private ActorSystem system;
         OutHandler handler = new AbstractOutHandler() {
             @Override
             public void onPull() throws Exception {
@@ -50,64 +67,45 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
                 }
 
                 if(isAvailable(out)){
-                    push(out, new Tuple2(currentContext, pendingEvents.poll()));
-                    if(pendingEvents.isEmpty()){
-
+                    if(pendingEvents.isEmpty() || pendingEvents == null){
+                        return;
                     }
+                    EventData current = pendingEvents.poll();
+                    push(out, new Tuple2(currentContext, current));
                 }
             }
         };
 
         @Override
         public void preStart(){
-            openCallback = createAsyncCallback(new Procedure<Done>() {
-                @Override
-                public void apply(Done param) throws Exception{
-                    partitionCount++;
-                }
-            });
-            closeCallback = createAsyncCallback(new Procedure<Done>() {
-                @Override
-                public void apply(Done param) throws Exception {
-                    if(--partitionCount == 0){
-                        completeStage();
-                    }
-                }
-            });
-            processCallback = createAsyncCallback(new Procedure<Done>() {
-                @Override
-                public void apply(Done param) throws Exception {
-                    handler.onPull();
-                }
-            });
+            system = ActorSystem.create("dispatcher");
+            ec = system.dispatcher();
         }
 
 
         @Override
-        public void onClose(PartitionContext partitionContext, CloseReason closeReason) throws Exception {
-            CompletionStage<Done> completion = new CompletableFuture<>();
-            completion.thenAccept(closeCallback::invoke);
-
-
+        public void onClose(PartitionContext partitionContext, CloseReason closeReason) throws Exception{
+            closeCallback.invoke(Done.getInstance());
         }
 
         @Override
         public void onOpen(PartitionContext partitionContext) throws Exception {
             System.out.println("SAMPLE: Partition " + partitionContext.getPartitionId() + " is opening");
-            CompletionStage<Done> completion = new CompletableFuture<>();
-            completion.thenAccept(openCallback::invoke);
+            openCallback.invoke(Done.getInstance());
             pendingEvents =  new ArrayDeque<>();
         }
 
         @Override
         public void onEvents(PartitionContext partitionContext, Iterable<EventData> iterable) throws Exception {
             Iterator<EventData> toIterate = iterable.iterator();
+            currentContext = partitionContext;
             while(toIterate.hasNext()){
                 EventData data = toIterate.next();
                 pendingEvents.offer(data);
+
             }
-            CompletionStage<Done> completion = new CompletableFuture<>();
-            completion.thenAccept(processCallback::invoke);
+           // CompletionStage<Done> completion = new CompletableFuture<>();
+            processCallback.invoke(Done.getInstance());
         }
 
         @Override

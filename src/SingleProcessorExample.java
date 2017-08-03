@@ -12,6 +12,7 @@ import com.microsoft.azure.eventprocessorhost.EventProcessorOptions;
 import com.microsoft.azure.eventprocessorhost.IEventProcessor;
 import com.microsoft.azure.eventprocessorhost.IEventProcessorFactory;
 import com.microsoft.azure.servicebus.ConnectionStringBuilder;
+import scala.concurrent.duration.FiniteDuration;
 
 public class SingleProcessorExample {
 
@@ -20,7 +21,7 @@ public class SingleProcessorExample {
 
 
     public static void main(String[] args){
-        final String consumerGroupName = "testar";
+        final String consumerGroupName = "akka-consumer";
         final String namespaceName = "proton-druid-test";
         final String eventHubName = "eventhub-test-1";
         final String sasKeyName = "TestPolicy";
@@ -30,7 +31,7 @@ public class SingleProcessorExample {
         final String storageAccountName = "protonstorage";
         final String storageAccountKey = "hW0zhEVr4NX/D2ihNc5QZ7Rn6mZiH6+d1ddBG7tzLq0o8LT/M58xoStPyBuxSDL2bP40fa4tHzqV/70dok82ow==";
         final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=" + storageAccountName
-                               + ";AccountKey=" + storageAccountKey + ";EndpointSuffix=core.windows.net";
+                + ";AccountKey=" + storageAccountKey + ";EndpointSuffix=core.windows.net";
 
 
         ConnectionStringBuilder eventHubConnectionString = new ConnectionStringBuilder(namespaceName, eventHubName, sasKeyName, sasKey);
