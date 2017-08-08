@@ -7,8 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="com.typesafe.akka:akka-stream_2.11:2.5.3" level="project" />
     <orderEntry type="library" name="com.microsoft.azure:azure-eventhubs:0.14.3" level="project" />
+    <orderEntry type="library" name="com.typesafe.akka:akka-stream_2.11:2.5.3" level="project" />
     <orderEntry type="library" name="com.microsoft.azure:azure-eventhubs-eph:0.14.2" level="project" />
   </component>
 </module>

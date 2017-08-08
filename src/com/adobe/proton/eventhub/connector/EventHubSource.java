@@ -1,7 +1,7 @@
 /**
  * Created by cantguaj on 6/21/17.
  */
-
+package com.adobe.proton.eventhub.connector;
 
 import akka.Done;
 import akka.actor.*;

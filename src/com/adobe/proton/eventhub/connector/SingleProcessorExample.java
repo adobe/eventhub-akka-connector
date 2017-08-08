@@ -1,18 +1,16 @@
-import akka.Done;
+package com.adobe.proton.eventhub.connector;
+
 import akka.actor.ActorSystem;
-import akka.japi.function.Procedure;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
-import akka.stream.SourceShape;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import com.adobe.proton.eventhub.connector.SingleProcessFactory;
 import com.microsoft.azure.eventprocessorhost.EventProcessorHost;
 import com.microsoft.azure.eventprocessorhost.EventProcessorOptions;
 import com.microsoft.azure.eventprocessorhost.IEventProcessor;
-import com.microsoft.azure.eventprocessorhost.IEventProcessorFactory;
 import com.microsoft.azure.servicebus.ConnectionStringBuilder;
-import scala.concurrent.duration.FiniteDuration;
 
 public class SingleProcessorExample {
 
