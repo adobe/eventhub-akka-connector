@@ -11,32 +11,31 @@ import com.microsoft.azure.eventprocessorhost.EventProcessorHost;
 import com.microsoft.azure.eventprocessorhost.EventProcessorOptions;
 import com.microsoft.azure.eventprocessorhost.IEventProcessor;
 import com.microsoft.azure.servicebus.ConnectionStringBuilder;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import java.util.Date;
 
 public class SingleProcessorExample {
 
-
-
-
-
     public static void main(String[] args){
-        final String consumerGroupName = "akka-consumer";
-        final String namespaceName = "proton-druid-test";
-        final String eventHubName = "eventhub-test-1";
-        final String sasKeyName = "TestPolicy";
-        final String sasKey = "sFNzyenwCuMF/68z2nl2tL2myjxnpWG+YbOFlz3zrxc=";
 
-
-        final String storageAccountName = "protonstorage";
-        final String storageAccountKey = "hW0zhEVr4NX/D2ihNc5QZ7Rn6mZiH6+d1ddBG7tzLq0o8LT/M58xoStPyBuxSDL2bP40fa4tHzqV/70dok82ow==";
+        Config config = ConfigFactory.load();
+        String consumerGroupName = config.getString("azure.eventhub.consumerGroupName");
+        String namespaceName = config.getString("azure.eventhub.namespaceName");
+        String eventHubName = config.getString("azure.eventhub.eventHubName");
+        String sasKeyName = config.getString("azure.eventhub.sasKeyName");
+        String sasKey = config.getString("azure.eventhub.sasKey");
+        String storageAccountName = config.getString("azure.eventhub.storageAccountName");
+        String storageAccountKey = config.getString("azure.eventhub.storageAccountKey");
         final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=" + storageAccountName
                 + ";AccountKey=" + storageAccountKey + ";EndpointSuffix=core.windows.net";
-
-
         ConnectionStringBuilder eventHubConnectionString = new ConnectionStringBuilder(namespaceName, eventHubName, sasKeyName, sasKey);
         ActorSystem system = ActorSystem.create("EventHubSystem");
         Materializer materializer = ActorMaterializer.create(system);
-        IEventProcessor processor = Source.fromGraph(new EventHubSource()).toMat(Sink.foreach(t -> System.out.println(t)), Keep.left()).run(materializer);
+        IEventProcessor processor = Source.fromGraph(new EventHubSource()).toMat(Sink.foreach(t -> System.out.println()), Keep.left()).run(materializer);
         EventProcessorOptions options = new EventProcessorOptions();
+        options.setInitialOffsetProvider(startAfterTime -> new Date().getTime() - 5000);
         final EventProcessorHost host = new EventProcessorHost(namespaceName, eventHubName, consumerGroupName,
                 eventHubConnectionString.toString(), storageConnectionString, eventHubName);
 

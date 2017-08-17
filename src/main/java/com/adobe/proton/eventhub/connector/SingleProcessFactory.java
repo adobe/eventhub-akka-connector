@@ -8,6 +8,7 @@ public class SingleProcessFactory implements IEventProcessorFactory {
 
     private final IEventProcessor processor;
 
+
     public SingleProcessFactory(IEventProcessor processor){
         this.processor = processor;
     }

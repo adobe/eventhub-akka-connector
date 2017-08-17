@@ -17,22 +17,19 @@ import scala.concurrent.ExecutionContext;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<Tuple2<PartitionContext, EventData>>, IEventProcessor>  {
-
 
     private Outlet<Tuple2<PartitionContext, EventData>> out;
     private SourceShape<Tuple2<PartitionContext, EventData>> shape;
 
-
     private class Logic extends GraphStageLogic implements IEventProcessor{
 
-        private final AtomicBoolean started = new AtomicBoolean();
         private final EventHubSource source = new EventHubSource();
         private Queue<EventData> pendingEvents;
         private PartitionContext currentContext;
         private int partitionCount;
+        private int checkpointBatchingCount = 0;
 
         private AsyncCallback<Done> openCallback = createAsyncCallback(new Procedure<Done>() {
             @Override
@@ -82,15 +79,15 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
             ec = system.dispatcher();
         }
 
-
         @Override
         public void onClose(PartitionContext partitionContext, CloseReason closeReason) throws Exception{
+            partitionContext.checkpoint();
             closeCallback.invoke(Done.getInstance());
         }
 
         @Override
         public void onOpen(PartitionContext partitionContext) throws Exception {
-            System.out.println("SAMPLE: Partition " + partitionContext.getPartitionId() + " is opening");
+           // System.out.println("Partition " + partitionContext.getPartitionId() + " is opening");
             openCallback.invoke(Done.getInstance());
             pendingEvents =  new ArrayDeque<>();
         }
@@ -101,10 +98,13 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
             currentContext = partitionContext;
             while(toIterate.hasNext()){
                 EventData data = toIterate.next();
+                checkpointBatchingCount++;
                 pendingEvents.offer(data);
-
+                if(checkpointBatchingCount % 100 == 0){
+                    partitionContext.checkpoint(data);
+                    checkpointBatchingCount = 0;
+                }
             }
-           // CompletionStage<Done> completion = new CompletableFuture<>();
             processCallback.invoke(Done.getInstance());
         }
 
@@ -119,11 +119,7 @@ public class EventHubSource extends GraphStageWithMaterializedValue<SourceShape<
             source = this.source;
             setHandler(out, handler);
         }
-
-
     }
-
-
 
     @Override
     public SourceShape<Tuple2<PartitionContext, EventData>> shape(){
