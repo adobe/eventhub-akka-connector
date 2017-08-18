@@ -4,3 +4,8 @@ out
 gen
 .DS_Store
 target/
+.project
+.classpath
+.settings
+.env
+*.class
