@@ -11,14 +11,14 @@ instance requires that an IEventProcessor be passed in. There is an example in t
 There is an `application.conf` file where a specific Event Hub's keys and consumer groups can be specified.
 
 
-###Contributions
+### Contributions
 
 Contributions are welcome. A Sink still has to be written for the whole flow to be complete.
  Please fork the project and create for your finished feature a pull request.
  
- ###Code of Conduct
+### Code of Conduct
  This project abides by the Adobe Code of Conduct. See [CODE OF CONDUCT](CODE_OF_CONDUCT.md).
  
- ###Licensing
+### Licensing
  This project is licensed under the Apache V2 License. See [LICENSE](LICENSE) for more information.
  
