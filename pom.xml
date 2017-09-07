@@ -22,7 +22,7 @@
     <version>1.0.0</version>
 
 
-    <name>eventhub-akka-connector</name>
+    <name>akka-eventhub-connector</name>
     <url>https://git.corp.adobe.com/proton/eventhub-akka-connector</url>
     <description>A connector between Azure's Event Hubs and Akka Streams
     </description>
