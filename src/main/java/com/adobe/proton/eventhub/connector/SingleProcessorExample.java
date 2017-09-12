@@ -22,7 +22,6 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
-import com.adobe.proton.eventhub.connector.SingleProcessFactory;
 import com.microsoft.azure.eventprocessorhost.EventProcessorHost;
 import com.microsoft.azure.eventprocessorhost.EventProcessorOptions;
 import com.microsoft.azure.eventprocessorhost.IEventProcessor;
@@ -51,7 +50,7 @@ public class SingleProcessorExample {
         Materializer materializer = ActorMaterializer.create(system);
         IEventProcessor processor = Source.fromGraph(new EventHubSource()).toMat(Sink.foreach(t -> System.out.println()), Keep.left()).run(materializer);
         EventProcessorOptions options = new EventProcessorOptions();
-        options.setInitialOffsetProvider(startAfterTime -> new Date().getTime() - 5000);
+        options.setInitialOffsetProvider(startAfterTime -> new Date().getTime() - 5000000);
         final EventProcessorHost host = new EventProcessorHost(namespaceName, eventHubName, consumerGroupName,
                 eventHubConnectionString.toString(), storageConnectionString, eventHubName);
 
@@ -61,10 +60,5 @@ public class SingleProcessorExample {
         } catch (Exception e){
 
         }
-
-
-
-
-
     }
 }

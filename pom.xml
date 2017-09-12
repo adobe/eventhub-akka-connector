@@ -97,7 +97,7 @@
                     <version>2.5.3</version>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <goals>deploy -DskipTests -Prelease -Ppush-docker-image</goals>
+                        <goals>deploy -DskipTests -Prelease</goals>
                         <preparationGoals>clean install -DskipTests</preparationGoals>
                         <tagNameFormat>@{project.version}</tagNameFormat>
                     </configuration>
