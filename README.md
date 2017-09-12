@@ -4,7 +4,7 @@ Akka streams connector for Azure Event Hub and an Akka streams Source. Can be us
 #### EventHubSource
 
 You can create a `Source` for the EventHub either via `Source.FromGraph(new EventHubSource)` or by calling the `EventHubSource.Create` method. 
-The `Source` is materialized into an `IEventProcessor` which, in combination with the `SingleProcessorFactory`, can be used to connect the stream with the `EventProcessorHost` (see the [example](https://github.com/Silv3rcircl3/Akka.Streams.Azure/blob/master/src/Akka.Streams.Azure.EventHub.Examples/SingleProcessorExample.cs) for details). Alternatively you can use the `MultiProcessorFactory` which takes a `IRunnableGraph` and `IMaterializer` and creates a new stream for every partition (see the [example](https://github.com/Silv3rcircl3/Akka.Streams.Azure/blob/master/src/Akka.Streams.Azure.EventHub.Examples/MultiProcessorExample.cs) for details), or implement your own factory. 
+The `Source` is materialized into an `IEventProcessor` which, in combination with the `SingleProcessorFactory`, can be used to connect the stream with the `EventProcessorHost` (see the [example]() for details). Alternatively you can use the `MultiProcessorFactory` which takes a `IRunnableGraph` and `IMaterializer` and creates a new stream for every partition (see the [example]() for details), or implement your own factory. 
 
 The `Source` keeps track of the partitions it is responsible for and only completes the stream once `IEventProcessor.CloseAsync` was called for all partitions. 
 
@@ -19,7 +19,7 @@ The `Source` emits a pair including the current message and the `PartitionContex
 
 #### EventHubSink
 
-You can create a `Sink` for the Storage Queue either via `Sink.FromGraph(new EventHubSink)` or by calling the `EventHubSink.Create` method or use the extension method `ToEventHub` on a `Source<IEnumerable<EventData>, TMat>` directly.
+You can create a `Sink` for the Storage Queue either via `Sink.FromGraph(new EventHubSink)` or by calling the `EventHubSink.Create` method.
 The `Sink` is materialized into a `Task` which will be completed with `Success` when reaching the normal end of the stream, or completed with `Failure` if there is a failure signaled in the stream.
 
 You can configure different behaviors if a batch couldn't be send to the EventHub by using the `SupervisionStrategy` attribute, the following behaviors are available: 
