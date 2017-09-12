@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.adobe.proton.eventhub.connector;
+package com.adobe.proton.eventhub.examples;
 
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
@@ -22,6 +22,8 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import com.adobe.proton.eventhub.connector.EventHubSource;
+import com.adobe.proton.eventhub.connector.SingleProcessFactory;
 import com.microsoft.azure.eventprocessorhost.EventProcessorHost;
 import com.microsoft.azure.eventprocessorhost.EventProcessorOptions;
 import com.microsoft.azure.eventprocessorhost.IEventProcessor;
