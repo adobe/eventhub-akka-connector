@@ -3,7 +3,7 @@ Akka streams connector for Azure Event Hub and an Akka streams Source. Can be us
 ### Documentation
 
 To create a new EventHubSource use the default constructor `new EventHubSource()`  and to create a usable Akka streams source use `Source.fromGraph(new EventHubSource())`. To materialize it into
-a IEventProcessor it has to be materliazed and run, like an Akka streams source.
+a IEventProcessor it has to be materialized and run, like an Akka streams source.
 
 There is an `application.conf` file where a specific Event Hub's keys and consumer groups can be specified.
 
