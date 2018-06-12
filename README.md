@@ -7,10 +7,9 @@ a IEventProcessor it has to be materialized and run, like an Akka streams source
 
 There is an `application.conf` file where a specific Event Hub's keys and consumer groups can be specified.
 
-
 ### Contributions
 
-Contributions are welcome. A Sink still has to be written for the whole flow to be complete.
+Contributions are welcome. Have a look at our [Contribution Guidelines](CONTRIBUTING.md). A Sink still has to be written for the whole flow to be complete.
  Please fork the project and create for your finished feature a pull request.
  
 ### Code of Conduct
