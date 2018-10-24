@@ -48,8 +48,8 @@
         <!-- Akka -->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.11</artifactId>
-            <version>2.5.3</version>
+            <artifactId>akka-actor_2.12</artifactId>
+            <version>2.5.17</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
